@@ -1,0 +1,36 @@
+version: "3.8"  # Versión del formato de docker-compose (compatible con Compose v3.8)
+
+services:  # Aquí se definen los contenedores que se van a levantar
+
+  postgres:  # Nombre del servicio (así se referencian entre sí los contenedores)
+    image: postgres:16  # Imagen oficial de PostgreSQL, versión 16
+    container_name: facturas_postgres  # Nombre fijo del contenedor (en vez de uno aleatorio)
+    restart: unless-stopped  # Si el contenedor se cae o reinicia el host, se vuelve a levantar solo (salvo que lo detengas tú manualmente)
+    environment:  # Variables de entorno que configura la propia imagen de postgres
+      POSTGRES_USER: ${POSTGRES_USER}  # Usuario de la base de datos, tomado del archivo .env
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Contraseña, también desde .env (nunca hardcodeada aquí)
+      POSTGRES_DB: postgres  # Nombre de la base de datos que se crea al iniciar
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persiste los datos de la BD en un volumen con nombre, así no se pierden al recrear el contenedor
+    ports:
+      - "5432:5432"  # Expone el puerto de Postgres del host (izquierda) al del contenedor (derecha)
+
+
+  odoo:  # Segundo servicio: la app de Odoo
+    image: odoo:17  # Imagen oficial de Odoo, versión 17
+    container_name: facturas_odoo
+    restart: unless-stopped
+    depends_on:
+      - postgres  # Se asegura de que el contenedor de postgres arranque primero (ojo: no espera a que esté "listo", solo a que arranque)
+    environment:
+      HOST: postgres  # Le dice a Odoo que se conecte a la BD usando el nombre del servicio "postgres" (Docker resuelve esto como DNS interno)
+      USER: ${POSTGRES_USER}  # Mismas credenciales que usa postgres, para poder autenticarse
+      PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8069:8069"  # Puerto por defecto de la interfaz web de Odoo
+    volumes:
+      - odoo_data:/var/lib/odoo  # Persiste filestore, sesiones, addons instalados, etc.
+
+volumes:  # Declaración de los volúmenes nombrados usados arriba (Docker los crea y gestiona)
+  postgres_data:
+  odoo_data:
