@@ -31,6 +31,19 @@ services:  # Aquí se definen los contenedores que se van a levantar
     volumes:
       - odoo_data:/var/lib/odoo  # Persiste filestore, sesiones, addons instalados, etc.
 
+  erp-connector-service:
+    build:
+      context: ./erp-connector-service
+    container_name: facturas_erp_connector
+    restart: unless-stopped
+    depends_on:
+      - odoo
+    env_file:
+      - .env
+    ports:
+      - "8003:8000"
+
+
 volumes:  # Declaración de los volúmenes nombrados usados arriba (Docker los crea y gestiona)
   postgres_data:
   odoo_data:
