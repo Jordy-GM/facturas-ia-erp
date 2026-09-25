@@ -3,15 +3,17 @@ version: "3.8"  # Versión del formato de docker-compose (compatible con Compose
 services:  # Aquí se definen los contenedores que se van a levantar
 
   postgres:  # Nombre del servicio (así se referencian entre sí los contenedores)
-    image: postgres:16  # Imagen oficial de PostgreSQL, versión 16
+    image: pgvector/pgvector:pg16  # PostgreSQL 16 con la extensión pgvector (búsqueda semántica de proveedores)
     container_name: facturas_postgres  # Nombre fijo del contenedor (en vez de uno aleatorio)
     restart: unless-stopped  # Si el contenedor se cae o reinicia el host, se vuelve a levantar solo (salvo que lo detengas tú manualmente)
     environment:  # Variables de entorno que configura la propia imagen de postgres
       POSTGRES_USER: ${POSTGRES_USER}  # Usuario de la base de datos, tomado del archivo .env
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Contraseña, también desde .env (nunca hardcodeada aquí)
-      POSTGRES_DB: postgres  # Nombre de la base de datos que se crea al iniciar
+      POSTGRES_DB: ${POSTGRES_DB}  # Base de datos que se crea al iniciar (la que usa DATABASE_URL), desde .env
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persiste los datos de la BD en un volumen con nombre, así no se pierden al recrear el contenedor
+      - ./infra/postgres/init_pgvector.sql:/docker-entrypoint-initdb.d/01_init_pgvector.sql  # Crea la extensión vector y la tabla proveedores (solo con volumen vacío)
+      - ./data/seed_proveedores.sql:/docker-entrypoint-initdb.d/02_seed_proveedores.sql  # Carga el catálogo inicial de proveedores (solo con volumen vacío)
     ports:
       - "5432:5432"  # Expone el puerto de Postgres del host (izquierda) al del contenedor (derecha)
 
@@ -42,6 +44,18 @@ services:  # Aquí se definen los contenedores que se van a levantar
       - .env
     ports:
       - "8003:8000"
+
+  validation-service:
+    build:
+      context: ./validation-service
+    container_name: facturas_validation
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    ports:
+      - "8002:8002"  # Mismo puerto que VALIDATION_SERVICE_URL en .env
 
 
 volumes:  # Declaración de los volúmenes nombrados usados arriba (Docker los crea y gestiona)
