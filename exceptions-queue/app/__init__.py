@@ -1,0 +1,1 @@
+"""exceptions-queue app package."""
