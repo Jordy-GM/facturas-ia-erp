@@ -1,6 +1,10 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
 
+
+
+load_dotenv() # Carga las variables de entorno desde el archivo .env
 
 class Settings(BaseSettings):
     app_name: str = "exceptions-queue"

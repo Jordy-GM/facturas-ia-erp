@@ -21,10 +21,5 @@ class ExceptionRecord(Base):
     estado = Column(String(20), nullable=False, default="pendiente", index=True)
     nota_resolucion = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now)
-    updated_at = Column(
-        DateTime(timezone=True),
-        nullable=False,
-        default=utc_now,
-        onupdate=utc_now,
-    )
+    updated_at = Column(DateTime(timezone=True),nullable=False,default=utc_now,onupdate=utc_now,)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
