@@ -3,6 +3,7 @@ from pydantic import Field
 
 from app import odoo_client
 from app.prompts import tool_descriptions as p
+from app.tools.errors import error_response
 
 def register(mcp, _conn):
     # tool para contabilizar la factura, que es un paso aparte de la creación pasar la factura de borrador a estado posted
@@ -11,11 +12,15 @@ def register(mcp, _conn):
         """Ejecuta action_post sobre una factura en borrador y devuelve su estado."""
         try:
             factura = odoo_client.post_invoice(_conn, invoice_id)
+            return {
+                "ok": True,
+                "invoice_id": factura["id"],
+                "state": factura["state"],
+                "name": factura["name"],
+                
+                    }
+            
         except Exception as e:
-            return {"error": str(e)}
+            return error_response(e)
 
-        return {
-            "invoice_id": factura["id"],
-            "state": factura["state"],
-            "name": factura["name"],
-        }
+        

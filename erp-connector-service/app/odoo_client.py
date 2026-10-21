@@ -119,6 +119,7 @@ def create_invoice(
             "name": line["name"],
             "quantity": line["quantity"],
             "price_unit": line["price_unit"],
+            **({"account_id": line["account_id"]} if line.get("account_id") else {}),
         })
         for line in lines
     ]

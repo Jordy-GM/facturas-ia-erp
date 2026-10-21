@@ -22,16 +22,10 @@ mcp = FastMCP("erp-connector-service")
 # preferimos que el servidor truene acá y no en cada llamada individual.
 _conn = odoo_client.get_connection()
 
+# Registra las herramienta en el servidor MCP usando la conexión a Odoo; sin esto el agente no las ve.
 crear_factura_proveedor.register(mcp, _conn)
 consultar_proveedor.register(mcp, _conn)
 contabilizar_factura.register(mcp, _conn)
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ from pydantic import Field
 
 from app import odoo_client
 from app.prompts import tool_descriptions as p
+from app.tools.errors import error_response
 
 
 
@@ -13,9 +14,10 @@ def register(mcp, _conn):# Recibe mcp y conn por parámetro (en vez de importarl
         try:
             partner_id = odoo_client.search_supplier(_conn, ruc)
             return {
+                "ok": True,
                 "encontrado": partner_id is not None,
                 "partner_id": partner_id,
             }
 
         except Exception as e:
-            return {"error": str(e)}
+            return error_response(e)
