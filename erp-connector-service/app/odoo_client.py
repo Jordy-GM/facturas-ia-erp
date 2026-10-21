@@ -13,7 +13,11 @@ import os
 import xmlrpc.client
 from typing import Optional
 
+from pathlib import Path
+from dotenv import load_dotenv
 
+# El .env está en la raíz del repo (dos niveles arriba de app/)
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 # ---------------------------------------------------------------------
 # Conexión / autenticación
 # ---------------------------------------------------------------------
